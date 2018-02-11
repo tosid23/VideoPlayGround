@@ -135,6 +135,5 @@ public class MainActivity extends AppCompatActivity {
             fullScreenFrameLayout();
         }
     }
-
 }
 
