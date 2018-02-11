@@ -6,6 +6,15 @@
     android:background="@android:color/holo_blue_dark"
     tools:context="com.sid.videoplayground.MainActivity">
 
+    <View
+        android:id="@+id/revealLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#7c4dff"
+        android:visibility="invisible">
+
+    </View>
+
     <android.support.v7.widget.CardView
         android:id="@+id/parentLayout"
         android:layout_width="match_parent"

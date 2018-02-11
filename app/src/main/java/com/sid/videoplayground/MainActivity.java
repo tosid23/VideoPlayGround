@@ -1,11 +1,13 @@
 package com.sid.videoplayground;
 
-import android.animation.ValueAnimator;
+import android.animation.Animator;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.CardView;
+import android.view.View;
+import android.view.ViewAnimationUtils;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
@@ -26,6 +28,8 @@ public class MainActivity extends AppCompatActivity {
     FrameLayout videoPlayer;
     @BindView(R.id.parentLayout)
     CardView parentLayout;
+    @BindView(R.id.revealLayout)
+    View revealLayout;
     YouTubePlayerSupportFragment ytfrag;
     String videoLink = "8nHBGFKLHZQ";
     String youtube_key = "AIzaSyDVEwKhJb2SNBUHVVhCSJOVOSAsgKtUtyI";
@@ -63,52 +67,95 @@ public class MainActivity extends AppCompatActivity {
         MAX_HEIGHT = parentLayout.getMeasuredHeight();
         MAX_WIDTH = parentLayout.getMeasuredWidth();
 
-        ValueAnimator anim = ValueAnimator.ofInt(MAX_WIDTH, MIN_WIDTH);
-        anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int val = (Integer) valueAnimator.getAnimatedValue();
-                ViewGroup.LayoutParams layoutParams = parentLayout.getLayoutParams();
-                layoutParams.height = val;
-                layoutParams.width = val;
-                parentLayout.setLayoutParams(layoutParams);
-                parentLayout.setRadius(val / 2);
+        int mWidth = this.getResources().getDisplayMetrics().widthPixels / 2;
+        int mHeight = this.getResources().getDisplayMetrics().heightPixels / 2;
+
+        Animator anim = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            try {
+                anim = ViewAnimationUtils.createCircularReveal(revealLayout, mWidth, mHeight, 0, MAX_WIDTH);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
-        anim.setDuration(ANIMATION_DURATION);
-        anim.start();
+        }
+
+        revealLayout.setVisibility(View.VISIBLE);
+        if (anim != null) {
+            anim.start();
+        }
+
+        revealLayout.setVisibility(View.VISIBLE);
+        ViewGroup.LayoutParams layoutParams = parentLayout.getLayoutParams();
+        layoutParams.height = MIN_WIDTH;
+        layoutParams.width = MIN_WIDTH;
+        parentLayout.setLayoutParams(layoutParams);
+        parentLayout.setRadius(MIN_WIDTH / 2);
     }
 
     public void fullScreenFrameLayout() {
-        ValueAnimator anim2 = ValueAnimator.ofInt(MIN_WIDTH, MAX_WIDTH);
-        anim2.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-            @Override
-            public void onAnimationUpdate(ValueAnimator valueAnimator) {
-                int val = (Integer) valueAnimator.getAnimatedValue();
-                ViewGroup.LayoutParams layoutParams = parentLayout.getLayoutParams();
-                layoutParams.width = val;
-                layoutParams.height = val;
-                if (val >= MAX_WIDTH) {
-                    parentLayout.setRadius(0);
-                    layoutParams.width = val;
-                    layoutParams.height = MAX_HEIGHT;
-                } else {
-                    parentLayout.setRadius(val / 2);
-                }
-                parentLayout.setLayoutParams(layoutParams);
+
+        int mWidth = this.getResources().getDisplayMetrics().widthPixels / 2;
+        int mHeight = this.getResources().getDisplayMetrics().heightPixels / 2;
+
+        Animator anim = null;
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.LOLLIPOP) {
+            try {
+                anim = ViewAnimationUtils.createCircularReveal(revealLayout, mWidth, mHeight, MAX_WIDTH, 0);
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        });
-        anim2.setDuration(ANIMATION_DURATION);
-        anim2.start();
+        }
+
+        if (anim != null) {
+            anim.addListener(new Animator.AnimatorListener() {
+                @Override
+                public void onAnimationStart(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationEnd(Animator animation) {
+                    revealLayout.setVisibility(View.INVISIBLE);
+                    ViewGroup.LayoutParams layoutParams = parentLayout.getLayoutParams();
+                    layoutParams.width = MAX_WIDTH;
+                    layoutParams.height = MAX_HEIGHT;
+                    parentLayout.setLayoutParams(layoutParams);
+                    parentLayout.setRadius(0);
+                }
+
+                @Override
+                public void onAnimationCancel(Animator animation) {
+
+                }
+
+                @Override
+                public void onAnimationRepeat(Animator animation) {
+
+                }
+            });
+            anim.start();
+        } else {
+            revealLayout.setVisibility(View.INVISIBLE);
+            ViewGroup.LayoutParams layoutParams = parentLayout.getLayoutParams();
+            layoutParams.width = MAX_WIDTH;
+            layoutParams.height = MAX_HEIGHT;
+            parentLayout.setLayoutParams(layoutParams);
+            parentLayout.setRadius(0);
+        }
     }
 
     private class FirstEvent extends AsyncTask<YouTubePlayer, Void, Void> {
         @Override
         protected Void doInBackground(YouTubePlayer... youTubePlayer) {
-            while (true) {
-                if (youTubePlayer[0].getCurrentTimeMillis() > TRANSFORMATION_START_AT) {
-                    return null;
+            try {
+                while (true) {
+                    if (youTubePlayer[0].getCurrentTimeMillis() > TRANSFORMATION_START_AT) {
+                        return null;
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
             }
         }
 
@@ -122,10 +169,15 @@ public class MainActivity extends AppCompatActivity {
     private class SecondEvent extends AsyncTask<YouTubePlayer, Void, Void> {
         @Override
         protected Void doInBackground(YouTubePlayer... youTubePlayer) {
-            while (true) {
-                if (youTubePlayer[0].getCurrentTimeMillis() > TRANSFORMATION_END_AT) {
-                    return null;
+            try {
+                while (true) {
+                    if (youTubePlayer[0].getCurrentTimeMillis() > TRANSFORMATION_END_AT) {
+                        return null;
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
             }
         }
 
@@ -135,6 +187,5 @@ public class MainActivity extends AppCompatActivity {
             fullScreenFrameLayout();
         }
     }
-
 }
 
