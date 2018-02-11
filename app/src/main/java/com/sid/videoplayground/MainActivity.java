@@ -68,11 +68,15 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 int val = (Integer) valueAnimator.getAnimatedValue();
-                ViewGroup.LayoutParams layoutParams = parentLayout.getLayoutParams();
-                layoutParams.height = val;
-                layoutParams.width = val;
-                parentLayout.setLayoutParams(layoutParams);
-                parentLayout.setRadius(val / 2);
+                try {
+                    ViewGroup.LayoutParams layoutParams = parentLayout.getLayoutParams();
+                    layoutParams.height = val;
+                    layoutParams.width = val;
+                    parentLayout.setLayoutParams(layoutParams);
+                    parentLayout.setRadius(val / 2);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
             }
         });
         anim.setDuration(ANIMATION_DURATION);
@@ -85,17 +89,21 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onAnimationUpdate(ValueAnimator valueAnimator) {
                 int val = (Integer) valueAnimator.getAnimatedValue();
-                ViewGroup.LayoutParams layoutParams = parentLayout.getLayoutParams();
-                layoutParams.width = val;
-                layoutParams.height = val;
-                if (val >= MAX_WIDTH) {
-                    parentLayout.setRadius(0);
+                try {
+                    ViewGroup.LayoutParams layoutParams = parentLayout.getLayoutParams();
                     layoutParams.width = val;
-                    layoutParams.height = MAX_HEIGHT;
-                } else {
-                    parentLayout.setRadius(val / 2);
+                    layoutParams.height = val;
+                    if (val >= MAX_WIDTH) {
+                        parentLayout.setRadius(0);
+                        layoutParams.width = val;
+                        layoutParams.height = MAX_HEIGHT;
+                    } else {
+                        parentLayout.setRadius(val / 2);
+                    }
+                    parentLayout.setLayoutParams(layoutParams);
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
-                parentLayout.setLayoutParams(layoutParams);
             }
         });
         anim2.setDuration(ANIMATION_DURATION);
@@ -105,10 +113,15 @@ public class MainActivity extends AppCompatActivity {
     private class FirstEvent extends AsyncTask<YouTubePlayer, Void, Void> {
         @Override
         protected Void doInBackground(YouTubePlayer... youTubePlayer) {
-            while (true) {
-                if (youTubePlayer[0].getCurrentTimeMillis() > TRANSFORMATION_START_AT) {
-                    return null;
+            try {
+                while (true) {
+                    if (youTubePlayer[0].getCurrentTimeMillis() > TRANSFORMATION_START_AT) {
+                        return null;
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
             }
         }
 
@@ -122,10 +135,15 @@ public class MainActivity extends AppCompatActivity {
     private class SecondEvent extends AsyncTask<YouTubePlayer, Void, Void> {
         @Override
         protected Void doInBackground(YouTubePlayer... youTubePlayer) {
-            while (true) {
-                if (youTubePlayer[0].getCurrentTimeMillis() > TRANSFORMATION_END_AT) {
-                    return null;
+            try {
+                while (true) {
+                    if (youTubePlayer[0].getCurrentTimeMillis() > TRANSFORMATION_END_AT) {
+                        return null;
+                    }
                 }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
             }
         }
 
