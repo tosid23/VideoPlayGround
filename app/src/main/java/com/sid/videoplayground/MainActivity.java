@@ -30,6 +30,7 @@ public class MainActivity extends AppCompatActivity {
     final int TRANSFORMATION_START_AT = 7000;
     final int TRANSFORMATION_END_AT = 14000;
     final int ANIMATION_DURATION = 300;
+    int TRANSFORMATION_INTERVAL = 5000;
     @BindView(R.id.videoPlayer)
     FrameLayout videoPlayer;
     @BindView(R.id.parentLayout)
@@ -43,6 +44,7 @@ public class MainActivity extends AppCompatActivity {
     Context context;
     int MAX_HEIGHT = 0;
     int MAX_WIDTH = 0;
+    boolean isCircle = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,8 +59,9 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onInitializationSuccess(YouTubePlayer.Provider provider, final YouTubePlayer youTubePlayer, boolean b) {
                 youTubePlayer.loadVideo(videoLink);
-                new FirstEvent().execute(youTubePlayer);
-                new SecondEvent().execute(youTubePlayer);
+//                new FirstEvent().execute(youTubePlayer);
+//                new SecondEvent().execute(youTubePlayer);
+                new LoopedEvent().execute(youTubePlayer);
             }
 
             @Override
@@ -108,13 +111,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void fullScreenFrameLayout() {
-        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            params.removeRule(RelativeLayout.ABOVE);
-        }
-        params.addRule(RelativeLayout.CENTER_IN_PARENT);
-        params.bottomMargin = 0;
-        parentLayout.setLayoutParams(params);
+//        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+//            params.removeRule(RelativeLayout.ABOVE);
+//        }
+//        params.addRule(RelativeLayout.CENTER_IN_PARENT);
+//        params.bottomMargin = 0;
+//        parentLayout.setLayoutParams(params);
 
         ValueAnimator anim2 = ValueAnimator.ofInt(MIN_WIDTH, MAX_WIDTH);
         anim2.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
@@ -134,6 +137,18 @@ public class MainActivity extends AppCompatActivity {
                         parentLayout.setRadius(val / 2);
                     }
                     parentLayout.setLayoutParams(layoutParams);
+
+                    if (val >= MAX_WIDTH) {
+                        RelativeLayout.LayoutParams params = new RelativeLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                            params.removeRule(RelativeLayout.ABOVE);
+                        }
+                        params.addRule(RelativeLayout.CENTER_IN_PARENT);
+                        params.bottomMargin = 0;
+                        params.width = val;
+                        params.height = MAX_HEIGHT;
+                        parentLayout.setLayoutParams(params);
+                    }
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
@@ -190,6 +205,40 @@ public class MainActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             fullScreenFrameLayout();
+        }
+    }
+
+    private class LoopedEvent extends AsyncTask<YouTubePlayer, Void, Void> {
+        YouTubePlayer ytp;
+
+        @Override
+        protected Void doInBackground(YouTubePlayer... youTubePlayer) {
+            ytp = youTubePlayer[0];
+            try {
+                while (true) {
+                    if (youTubePlayer[0].getCurrentTimeMillis() > TRANSFORMATION_INTERVAL) {
+                        return null;
+                    }
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            TRANSFORMATION_INTERVAL = TRANSFORMATION_INTERVAL + 5000;
+            new LoopedEvent().execute(ytp);
+            if (isCircle) {
+                isCircle = false;
+                fullScreenFrameLayout();
+            } else {
+                isCircle = true;
+                roundFrameLayout();
+            }
+
         }
     }
 }
